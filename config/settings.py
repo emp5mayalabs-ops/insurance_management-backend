@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     # Project apps
     "admin_portal",
     "agent_portal",
+    "customer_portal",
 ]
 
 
