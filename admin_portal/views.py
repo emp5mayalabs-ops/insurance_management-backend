@@ -1,3 +1,4 @@
+# admin_portal/views.py
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 
@@ -26,8 +27,6 @@ class AdminLoginView(APIView):
     def post(self, request):
 
         # Defensive check: request.data must be a dict (JSON object).
-        # If the client sends a raw string (wrong Content-Type), we
-        # return a clean 400 instead of crashing with a 500.
         if not isinstance(request.data, dict):
 
             return Response(
@@ -132,6 +131,7 @@ class CreateAgentView(APIView):
         if serializer.is_valid():
 
             user = serializer.save()
+            profile = user.agent_profile
 
             return Response(
                 {
@@ -142,12 +142,35 @@ class CreateAgentView(APIView):
                         "id": user.id,
                         "username": user.username,
                         "email": user.email,
-                        "agent_id":
-                            user.agent_profile.agent_id,
-                        "phone":
-                            user.agent_profile.phone,
-                        "is_active":
-                            user.agent_profile.is_active,
+
+                        # -------- BASIC --------
+                        "agent_id": profile.agent_id,
+                        "phone": profile.phone,
+
+                        # -------- ID PROOF --------
+                        "aadhaar_number":
+                            profile.aadhaar_number,
+                        "pan_number":
+                            profile.pan_number,
+
+                        # -------- INSURANCE --------
+                        "insurance_company":
+                            profile.insurance_company,
+                        "insurance_company_display":
+                            profile.get_insurance_company_display(),
+
+                        # -------- ADDRESS --------
+                        "address_line1":
+                            profile.address_line1,
+                        "address_line2":
+                            profile.address_line2,
+                        "city": profile.city,
+                        "state": profile.state,
+                        "pincode": profile.pincode,
+
+                        # -------- STATUS --------
+                        "is_active": profile.is_active,
+                        "created_at": profile.created_at,
                     }
                 },
                 status=status.HTTP_201_CREATED

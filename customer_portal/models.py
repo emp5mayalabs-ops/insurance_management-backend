@@ -1,36 +1,32 @@
-# agent_portal/models.py
+# customer_portal/models.py
 from django.db import models
 from django.conf import settings
 
 
-class AgentProfile(models.Model):
+class CustomerProfile(models.Model):
 
     # ---------------------------------------------------
-    # INSURANCE COMPANY CHOICES (HARD-CODED, 3 OPTIONS)
-    # ---------------------------------------------------
-    INSURANCE_ICICI = "ICICI"
-    INSURANCE_STAR = "STAR"
-    INSURANCE_NIVA_BUPA = "NIVA_BUPA"
-
-    INSURANCE_COMPANY_CHOICES = [
-        (INSURANCE_ICICI, "ICICI Lombard"),
-        (INSURANCE_STAR, "Star Health"),
-        (INSURANCE_NIVA_BUPA, "Niva Bupa"),
-    ]
-
-    # ---------------------------------------------------
-    # LINK TO DJANGO USER
+    # LINK TO DJANGO USER + CREATING AGENT
     # ---------------------------------------------------
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="agent_profile",
+        related_name="customer_profile",
+    )
+
+    created_by_agent = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="customers_created",
+        help_text="Agent who created this customer"
     )
 
     # ---------------------------------------------------
-    # BASIC / BUSINESS
+    # BASIC
     # ---------------------------------------------------
-    agent_id = models.CharField(
+    customer_id = models.CharField(
         max_length=50,
         unique=True
     )
@@ -41,29 +37,33 @@ class AgentProfile(models.Model):
         default=""
     )
 
+    date_of_birth = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    gender = models.CharField(
+        max_length=10,
+        choices=[
+            ("MALE", "Male"),
+            ("FEMALE", "Female"),
+            ("OTHER", "Other"),
+        ],
+        blank=True,
+        default=""
+    )
+
     # ---------------------------------------------------
     # ID PROOF
     # ---------------------------------------------------
     aadhaar_number = models.CharField(
         max_length=12,
         blank=True,
-        default="",
-        help_text="12-digit Aadhaar number"
+        default=""
     )
 
     pan_number = models.CharField(
         max_length=10,
-        blank=True,
-        default="",
-        help_text="10-character PAN (e.g. ABCDE1234F)"
-    )
-
-    # ---------------------------------------------------
-    # INSURANCE COMPANY
-    # ---------------------------------------------------
-    insurance_company = models.CharField(
-        max_length=20,
-        choices=INSURANCE_COMPANY_CHOICES,
         blank=True,
         default=""
     )
@@ -111,4 +111,4 @@ class AgentProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.agent_id} ({self.user.username})"
+        return f"{self.customer_id} ({self.user.username})"
